@@ -5,18 +5,14 @@
  */
 package movierecsys.dal;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import movierecsys.be.Movie;
 
 /**
  *
- * @author pgn waFHKAJWHLGKJHGKSHEGkjhuklH
+ * @author pgn
  */
 public class MovieDAO
 {
@@ -82,9 +78,25 @@ public class MovieDAO
      */
     private Movie createMovie(int releaseYear, String title)
     {
-        //TODO Create movie.
-        return null;
+        List<Movie> allMovies = new ArrayList<>();
+        try {
+            allMovies = getAllMovies();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //int theBiggestID=0;
+        int theBiggestID = allMovies.get(0).getId();
+
+        for(Movie movie: allMovies)
+        {
+            if(movie.getId()>= theBiggestID)
+                theBiggestID = movie.getId();
+        }
+
+        Movie mov = new Movie(theBiggestID, releaseYear, title);
+        return mov;
     }
+
 
     /**
      * Deletes a movie from the persistence storage.
@@ -93,7 +105,52 @@ public class MovieDAO
      */
     private void deleteMovie(Movie movie)
     {
-        //TODO Delete movie
+       File inputFile = new File(MOVIE_SOURCE);
+       File temporaryFile = new File("temporaryFile.txt");
+    BufferedReader reader = null;
+    BufferedWriter writer=null;
+        try {
+             reader = new BufferedReader(new FileReader(inputFile));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+             writer = new BufferedWriter(new FileWriter(temporaryFile));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String lineToRemove = String.valueOf(movie.getId());
+        String currentLine="";
+
+        while(true) {
+            try {
+                if (!((currentLine = reader.readLine()) != null)) break;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            // trim newline when comparing with lineToRemove
+            String trimmedLine = currentLine.trim();
+            if(trimmedLine.contains(lineToRemove)) continue;
+            try {
+                writer.write(currentLine + System.getProperty("line.separator"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        boolean successful = temporaryFile.renameTo(inputFile);
+        try {
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     /**
@@ -104,7 +161,14 @@ public class MovieDAO
      */
     private void updateMovie(Movie movie)
     {
-        //TODO Update movies
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(MOVIE_SOURCE, true);
+            fw.append(movie.toString());
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -115,8 +179,20 @@ public class MovieDAO
      */
     private Movie getMovie(int id)
     {
+        List<Movie> allMovies = new ArrayList<>();
+        try {
+            allMovies = getAllMovies();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        for(Movie movie: allMovies)
+        {
+            if(movie.getId()==id)
+                return movie;
+        }
         //TODO Get one Movie
         return null;
     }
+
 
 }

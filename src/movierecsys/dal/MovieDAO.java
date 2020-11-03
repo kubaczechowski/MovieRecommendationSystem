@@ -16,7 +16,7 @@ import movierecsys.be.Movie;
 
 /**
  *
- * @author pgn
+ * @author pgn waFHKAJWHLGKJHGKSHEGkjhuklH
  */
 public class MovieDAO
 {
